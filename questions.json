@@ -1,6 +1,6 @@
 [
     {
-        "question": "Inside which HTML element do we put the JavaScript??",
+        "question": "Inside which HTML element do we put the JavaScript?",
         "choice1": "<script>",
         "choice2": "<javascript>",
         "choice3": "<js>",
@@ -16,11 +16,30 @@
         "answer": 3
     },
     {
+        "question": " Which event occurs when the user clicks on an HTML element?",
+        "choice1": "onmouseclick",
+        "choice2": "onmouseover",
+        "choice3": "onchange",
+        "choice4": "onclick",
+        "answer": 4
+    },
+    {
         "question": " How do you write 'Hello World' in an alert box?",
         "choice1": "msgBox('Hello World');",
         "choice2": "alertBox('Hello World');",
         "choice3": "msg('Hello World');",
         "choice4": "alert('Hello World');",
         "answer": 4
+    },
+    {
+        "question": " Where is the correct place to insert a JavaScript?",
+        "choice1": "Inside a <div> container",
+        "choice2": "The <body> section",
+        "choice3": "The <head> section",
+        "choice4": "Both the <head> section and the <body> section",
+        "answer": 4
     }
+
+
+    
 ]
