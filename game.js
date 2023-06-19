@@ -1,197 +1,113 @@
-// BUTTONS
-const highScoresBtn = document.getElementById("highScoresBtn");
-const saveScoreBtn = document.getElementById("saveScoreBtn");
-
-//INPUT
-const usernameInput = document.getElementById("username");
-
-//PAGE
-const pages = Array.from(document.getElementsByClassName("page"));
-
-//GAME Elements
-const question = document.getElementById("question");
-const choices = Array.from(document.getElementsByClassName("choice"));
-const scoreText = document.getElementById("score");
-const questionCounterText = document.getElementById("questionCounter");
-
-const CORRECT_BONUS = 10;
-const MAX_QUESTIONS = 5;
-
+const question = document.getElementById('question');
+const choices = Array.from(document.getElementsByClassName('choice-text'));
+const progressText = document.getElementById('progressText');
+const scoreText = document.getElementById('score');
+const progressBarFull = document.getElementById('progressBarFull');
+const loader = document.getElementById('loader');
+const game = document.getElementById('game');
 let currentQuestion = {};
-let acceptingAnswers = true;
+let acceptingAnswers = false;
 let score = 0;
 let questionCounter = 0;
-let availableQuestions = [];
-//TODO: load form json file
-let questions = [
-  {
-    question: "What is the answer to question 1?",
-    choice1: "Choice Choice 1",
-    choice2: "Choice Choice 2",
-    choice3: "Choice Choice 3",
-    choice4: "Choice Choice 4",
-    answer: 1
-  },
-  {
-    question: "What is the answer to question 2?",
-    choice1: "Choice Choice 1",
-    choice2: "Choice Choice 2",
-    choice3: "Choice Choice 3",
-    choice4: "Choice Choice 4",
-    answer: 2
-  },
-  {
-    question: "What is the answer to question 3?",
-    choice1: "Choice Choice 1",
-    choice2: "Choice Choice 2",
-    choice3: "Choice Choice 3",
-    choice4: "Choice Choice 4",
-    answer: 4
-  }
-];
+let availableQuesions = [];
 
-//End Screen Elements
-const finalScore = document.getElementById("finalScore");
+let questions = [];
 
-//High Score Elements
-const highScoresList = document.getElementById("highScoresList");
-const highScores = JSON.parse(localStorage.getItem("highScores")) || [];
+fetch(
+    'https://opentdb.com/api.php?amount=10&category=9&difficulty=easy&type=multiple'
+)
+    .then((res) => {
+        return res.json();
+    })
+    .then((loadedQuestions) => {
+        questions = loadedQuestions.results.map((loadedQuestion) => {
+            const formattedQuestion = {
+                question: loadedQuestion.question,
+            };
 
-//Simulated Navigation
-navigateTo = pageName => {
-  pages.forEach(page => {
-    if (page.id === pageName) {
-      page.classList.remove("hidden");
-    } else {
-      page.classList.add("hidden");
-    }
-  });
-};
+            const answerChoices = [...loadedQuestion.incorrect_answers];
+            formattedQuestion.answer = Math.floor(Math.random() * 4) + 1;
+            answerChoices.splice(
+                formattedQuestion.answer - 1,
+                0,
+                loadedQuestion.correct_answer
+            );
 
-//GAME Functions
+            answerChoices.forEach((choice, index) => {
+                formattedQuestion['choice' + (index + 1)] = choice;
+            });
 
-playGame = () => {
-  startGame();
-  navigateTo("game");
-};
+            return formattedQuestion;
+        });
+
+        startGame();
+    })
+    .catch((err) => {
+        console.error(err);
+    });
+
+//CONSTANTS
+const CORRECT_BONUS = 10;
+const MAX_QUESTIONS = 3;
 
 startGame = () => {
-  questionCounter = 0;
-  score = 0;
-  availableQuestions = [...questions];
-  getNewQuestion();
+    questionCounter = 0;
+    score = 0;
+    availableQuesions = [...questions];
+    getNewQuestion();
+    game.classList.remove('hidden');
+    loader.classList.add('hidden');
 };
 
 getNewQuestion = () => {
-  if (availableQuestions.length === 0) {
-    //set final score text
-    finalScore.innerHTML = score;
-    //Go to the end page
-    return navigateTo("end");
-  }
-  questionCounter++;
-  questionCounterText.innerText = `Question ${questionCounter}/${MAX_QUESTIONS}`;
-  const questionIndex = Math.floor(Math.random() * availableQuestions.length);
-  currentQuestion = availableQuestions[questionIndex];
-  question.innerHTML = currentQuestion.question;
+    if (availableQuesions.length === 0 || questionCounter >= MAX_QUESTIONS) {
+        localStorage.setItem('mostRecentScore', score);
+        //go to the end page
+        return window.location.assign('/end.html');
+    }
+    questionCounter++;
+    progressText.innerText = `Question ${questionCounter}/${MAX_QUESTIONS}`;
+    //Update the progress bar
+    progressBarFull.style.width = `${(questionCounter / MAX_QUESTIONS) * 100}%`;
 
-  choices.forEach(choice => {
-    const number = choice.dataset["number"];
-    choice.innerHTML = currentQuestion["choice" + number];
-  });
+    const questionIndex = Math.floor(Math.random() * availableQuesions.length);
+    currentQuestion = availableQuesions[questionIndex];
+    question.innerText = currentQuestion.question;
 
-  //Remove question from available questions
-  availableQuestions.splice(questionIndex, 1);
+    choices.forEach((choice) => {
+        const number = choice.dataset['number'];
+        choice.innerText = currentQuestion['choice' + number];
+    });
 
-  //let users answer now that question is ready
-  acceptingAnswers = true;
+    availableQuesions.splice(questionIndex, 1);
+    acceptingAnswers = true;
 };
 
-choices.forEach(choice => {
-  choice.addEventListener("click", e => {
-    //dont let the user attempt to answer until the new question is ready
-    if (!acceptingAnswers) return;
-    acceptingAnswers = false;
-    const selectedChoice = e.target;
-    const selectedAnswer = selectedChoice.dataset["number"];
+choices.forEach((choice) => {
+    choice.addEventListener('click', (e) => {
+        if (!acceptingAnswers) return;
 
-    const classToApply =
-      selectedAnswer == currentQuestion.answer ? "correct" : "incorrect";
+        acceptingAnswers = false;
+        const selectedChoice = e.target;
+        const selectedAnswer = selectedChoice.dataset['number'];
 
-    //Add the correct/incorrect animation
+        const classToApply =
+            selectedAnswer == currentQuestion.answer ? 'correct' : 'incorrect';
 
-    selectedChoice.parentElement.classList.add(classToApply);
+        if (classToApply === 'correct') {
+            incrementScore(CORRECT_BONUS);
+        }
 
-    //Increase the score
-    incrementScore(classToApply === "correct" ? CORRECT_BONUS : 0);
+        selectedChoice.parentElement.classList.add(classToApply);
 
-    setTimeout(() => {
-      selectedChoice.parentElement.classList.remove(classToApply);
-      //Load New Question
-      getNewQuestion();
-    }, 1000);
-  });
+        setTimeout(() => {
+            selectedChoice.parentElement.classList.remove(classToApply);
+            getNewQuestion();
+        }, 1000);
+    });
 });
 
-incrementScore = num => {
-  score += num;
-  scoreText.innerHTML = "Score: " + score;
+incrementScore = (num) => {
+    score += num;
+    scoreText.innerText = score;
 };
-
-//HIGH SCORES
-
-showHighScores = () => {
-  highScoresList.innerHTML = highScores
-    .map(
-      highScore =>
-        `<li class="high-score">${highScore.username} - ${highScore.score}</li>`
-    )
-    .join("");
-  navigateTo("highScores");
-};
-
-saveHighScore = () => {
-  //add the score, sort the array, and splice off starting at position 5
-  highScores.push({ score, username: usernameInput.value });
-  highScores.sort((a, b) => b.score - a.score);
-  highScores.splice(5);
-  //Save to local storage for next time
-  localStorage.setItem("highScores", JSON.stringify(highScores));
-};
-
-usernameInput.addEventListener("keyup", () => {
-  saveScoreBtn.disabled = !usernameInput.value;
-});
-
-//saves score if appropriate in array of top 5 scores
-// saveHighScore = () => {
-//make a copy of existing scores
-// const scoresCopy = [...highScores];
-
-// //if there is not score yet, then just add the new one and move on
-// if (highScores.length < 1) {
-//   highScores.push(score);
-// } else {
-//   //iterate through existing scores and insert score where appropriate
-//   for (let i = 0; i < scoresCopy.length; i++) {
-//     const savedScore = scoresCopy[i];
-
-//     if (score > savedScore) {
-//       highScores.splice(i, 0, score);
-//       //if we moved beyond the max number of scores, then remove the last one
-//       if (highScores.length > 5) {
-//         highScores.splice(highScores.length - 1, 1);
-//       }
-//       //we are done
-//       break;
-//     }
-//     //if the score was not greater than any saved score but we hve an open slot, add it
-//     else if (i === scoresCopy.length - 1 && highScores.length < 5) {
-//       highScores.push(score);
-//     }
-//   }
-// }
-
-//Save to local storage for next time
-// localStorage.setItem("highScores", JSON.stringify(highScores));
-// };
