@@ -44,6 +44,6 @@ This JavaScript Code Quiz challenge has 5 questions total and they’re all mult
 * [MIT](LICENSE)
 
 # Contact Links
-[Github Page](https://github.com/yungxsuccess)
-[Deployed Site](https://yungxsuccess.github.io/Javascript-Code-Quiz/) 
+* [Github Page](https://github.com/yungxsuccess)
+* [Deployed Site](https://yungxsuccess.github.io/Javascript-Code-Quiz/) 
 
