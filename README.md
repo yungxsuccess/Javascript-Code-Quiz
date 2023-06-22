@@ -24,6 +24,8 @@ This JavaScript Code Quiz challenge has 5 questions total and they’re all mult
 * CSS - Flexbox, Animtations, and REM units
 
 * [Screenshot](Capture8.PNG)
+* [CodePreview](Capture10.PNG)
+
 
 # Code
 * Html
@@ -45,5 +47,5 @@ This JavaScript Code Quiz challenge has 5 questions total and they’re all mult
 
 # Contact Links
 * [Github Page](https://github.com/yungxsuccess)
-* [Deployed Site](https://yungxsuccess.github.io/Javascript-Code-Quiz/) 
+* [Deployed Site](https://yungxsuccess.github.io/JavascriptCodeQuiz/) 
 
