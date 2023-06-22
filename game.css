@@ -1,3 +1,9 @@
+.header {
+  font-size: 1.8rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .choice-container {
   display: flex;
   margin-bottom: 0.5rem;

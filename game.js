@@ -5,44 +5,22 @@ const scoreText = document.getElementById('score');
 const progressBarFull = document.getElementById('progressBarFull');
 const loader = document.getElementById('loader');
 const game = document.getElementById('game');
+const timerElement = document.getElementById('timer');
 let currentQuestion = {};
 let acceptingAnswers = false;
 let score = 0;
 let questionCounter = 0;
 let availableQuesions = [];
-
 let questions = [];
 
 fetch('questions.json')
-    .then((res) => {
-        return res.json();
-    })
-    .then((loadedQuestions) => {
-        questions = loadedQuestions;
-        startGame();
+  .then((res) => {
+    return res.json();
   })
   .then((loadedQuestions) => {
-    questions = loadedQuestions.results.map((loadedQuestion) => {
-      const formattedQuestion = {
-        question: loadedQuestion.question,
-      };
-
-      const answerChoices = [...loadedQuestion.incorrect_answers];
-      formattedQuestion.answer = Math.floor(Math.random() * 4) + 1;
-      answerChoices.splice(
-        formattedQuestion.answer - 1,
-        0,
-        loadedQuestion.correct_answer
-      );
-
-      answerChoices.forEach((choice, index) => {
-        formattedQuestion['choice' + (index + 1)] = choice;
-      });
-
-      return formattedQuestion;
-    });
-
+    questions = loadedQuestions;
     startGame();
+
   })
   .catch((err) => {
     console.error(err);
@@ -51,6 +29,8 @@ fetch('questions.json')
 //CONSTANTS
 const CORRECT_BONUS = 10;
 const MAX_QUESTIONS = 5;
+const TIME_PENALTY = 10;
+
 
 startGame = () => {
   questionCounter = 0;
@@ -59,7 +39,30 @@ startGame = () => {
   getNewQuestion();
   game.classList.remove('hidden');
   loader.classList.add('hidden');
+  startTimer();
 };
+
+function startTimer() {
+  timeRemaining = 60;
+  timer = setInterval(updateTimer, 1000);
+}
+
+function updateTimer() {
+  timeRemaining--;
+  timerElement.textContent = timeRemaining;
+  if (timeRemaining <= 0) {
+    clearInterval(timer);
+
+    // Handle the case when time runs out
+    handleGameOver();
+  }
+}
+
+function handleGameOver() {
+  // Perform any necessary actions when the game is over due to time running out
+  // For example, redirect to the end page or display a game over message
+  window.location.assign('/end.html');
+}
 
 getNewQuestion = () => {
   if (availableQuesions.length === 0 || questionCounter >= MAX_QUESTIONS) {
@@ -98,6 +101,8 @@ choices.forEach((choice) => {
 
     if (classToApply === 'correct') {
       incrementScore(CORRECT_BONUS);
+    } else {
+      decrementTime(TIME_PENALTY);
     }
 
     selectedChoice.parentElement.classList.add(classToApply);
@@ -113,3 +118,10 @@ incrementScore = (num) => {
   score += num;
   scoreText.innerText = score;
 };
+function decrementTime(num) {
+  timeRemaining -= num;
+  if (timeRemaining < 0) {
+    timeRemaining = 0;
+  }
+  timerElement.textContent = timeRemaining;
+}
